@@ -1,3 +1,58 @@
+HEAD
+# Virtual Environment
+venv/
+env/
+.venv/
+
+# Environment Variables (contains secrets)
+.env
+
+# Logs
+logs/
+*.log
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Models (if too large)
+models/
+
+# Data files (if sensitive)
+data/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# VS Code settings
+.vscode/
+
+# Pytest cache
+.pytest_cache/
+
+# Docker
+*.dockerignore
+
+
+venv/
+models/
+data/
+logs/
+__pycache__/
+*.pyc
+.env
+*.h5
+*.pkl
+*.pt
+*.pth
+*.bin
+*.zip
+*.tar
+*.gz
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
@@ -216,3 +271,9 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+ bad2586621c56ea366ebb73bf68c7c872ea201bf
+
+ mlflow.db
+ venv/
+ env/
+ __pycache__/

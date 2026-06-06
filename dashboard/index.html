@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>AIOps Platform</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Segoe UI',sans-serif;background:#0a0e1a;color:#e0e6f0;min-height:100vh;}
+header{background:linear-gradient(135deg,#0d1b2a,#1a2744);padding:16px 32px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #1e3a5f;position:sticky;top:0;z-index:100;}
+.logo{display:flex;align-items:center;gap:12px;}
+.logo-icon{width:42px;height:42px;background:linear-gradient(135deg,#00d4ff,#0066ff);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;}
+.logo h1{font-size:20px;font-weight:700;color:#fff;}
+.logo p{font-size:11px;color:#7090b0;}
+.status-badge{display:flex;align-items:center;gap:6px;background:rgba(0,255,100,0.1);border:1px solid rgba(0,255,100,0.3);padding:6px 14px;border-radius:20px;font-size:12px;color:#00ff64;}
+.dot{width:8px;height:8px;background:#00ff64;border-radius:50%;animation:pulse 1.5s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
+.container{padding:24px 32px;max-width:1400px;margin:0 auto;}
+.grid6{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-bottom:22px;}
+.card{background:linear-gradient(135deg,#0d1b2a,#112240);border:1px solid #1e3a5f;border-radius:14px;padding:18px;position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;}
+.c-blue::before{background:#0066ff;}.c-red::before{background:#ff1744;}.c-green::before{background:#00c853;}.c-yellow::before{background:#ffd600;}.c-purple::before{background:#aa00ff;}.c-cyan::before{background:#00d4ff;}
+.card-label{font-size:10px;color:#7090b0;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
+.card-val{font-size:28px;font-weight:700;color:#fff;}
+.card-sub{font-size:11px;color:#5070a0;margin-top:4px;}
+.card-icon{position:absolute;right:14px;top:14px;font-size:26px;opacity:0.12;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:22px;}
+.panel{background:linear-gradient(135deg,#0d1b2a,#112240);border:1px solid #1e3a5f;border-radius:14px;padding:20px;}
+.panel-title{font-size:13px;font-weight:600;color:#c0d0e0;margin-bottom:14px;display:flex;align-items:center;gap:6px;}
+/* Bar chart */
+.bar-chart{display:flex;flex-direction:column;gap:10px;}
+.bar-row{display:flex;align-items:center;gap:10px;}
+.bar-label{font-size:11px;color:#7090b0;width:110px;text-align:right;flex-shrink:0;}
+.bar-track{flex:1;background:#0d1b2a;border-radius:4px;height:18px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:4px;transition:width 0.6s ease;display:flex;align-items:center;justify-content:flex-end;padding-right:6px;}
+.bar-num{font-size:10px;color:#fff;font-weight:700;}
+/* Donut */
+.donut-wrap{display:flex;align-items:center;gap:20px;}
+.donut-svg{flex-shrink:0;}
+.donut-legend{display:flex;flex-direction:column;gap:8px;}
+.legend-item{display:flex;align-items:center;gap:8px;font-size:12px;}
+.legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+/* Simulate */
+.sim-buttons{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px;}
+.btn-sim{padding:10px 18px;border-radius:10px;border:none;cursor:pointer;font-size:13px;font-weight:600;color:#fff;transition:all 0.2s;}
+.bn{background:linear-gradient(135deg,#006633,#009944);}
+.bd{background:linear-gradient(135deg,#cc0000,#ff1744);}
+.bp{background:linear-gradient(135deg,#7700cc,#aa00ff);}
+.bi{background:linear-gradient(135deg,#cc6600,#ff9100);}
+.be{background:linear-gradient(135deg,#006699,#0099cc);}
+.btn-sim:hover{transform:translateY(-2px);opacity:0.9;}
+.btn-sim:disabled{opacity:0.4;cursor:not-allowed;transform:none;}
+.result-box{padding:14px;background:rgba(0,0,0,0.3);border-radius:10px;border:1px solid #1e3a5f;font-size:13px;display:none;margin-top:10px;}
+.result-box.show{display:block;}
+/* Feed */
+.feed{height:160px;overflow-y:auto;font-family:'Courier New',monospace;font-size:12px;line-height:1.9;padding:4px;}
+.feed::-webkit-scrollbar{width:3px;}
+.feed::-webkit-scrollbar-thumb{background:#1e3a5f;border-radius:4px;}
+.la{color:#ff5252;}.ln{color:#69f0ae;}.li{color:#5070a0;}
+/* Table */
+table{width:100%;border-collapse:collapse;}
+th{text-align:left;padding:9px 12px;font-size:10px;color:#5070a0;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid #1e3a5f;}
+td{padding:11px 12px;font-size:12px;border-bottom:1px solid rgba(30,58,95,0.4);}
+tr:hover td{background:rgba(255,255,255,0.02);}
+.badge{padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700;text-transform:uppercase;}
+.bc{background:rgba(255,23,68,0.2);border:1px solid rgba(255,23,68,0.5);color:#ff5252;}
+.bh{background:rgba(255,152,0,0.2);border:1px solid rgba(255,152,0,0.5);color:#ffb74d;}
+.bm{background:rgba(255,214,0,0.2);border:1px solid rgba(255,214,0,0.5);color:#ffd740;}
+.bl{background:rgba(0,200,83,0.2);border:1px solid rgba(0,200,83,0.5);color:#69f0ae;}
+.progress{height:5px;background:#1e3a5f;border-radius:3px;overflow:hidden;margin-top:3px;}
+.prog-fill{height:100%;border-radius:3px;transition:width 0.5s;}
+.btn{padding:7px 14px;border-radius:8px;border:none;cursor:pointer;font-size:12px;font-weight:600;transition:all 0.2s;}
+.btn-r{background:rgba(255,23,68,0.15);border:1px solid rgba(255,23,68,0.4);color:#ff5252;}
+.btn-b{background:rgba(0,102,255,0.15);border:1px solid rgba(0,102,255,0.4);color:#4d94ff;}
+.row{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+@media(max-width:900px){.grid6{grid-template-columns:repeat(2,1fr);}.grid2{grid-template-columns:1fr;}.container{padding:14px;}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">
+    <div class="logo-icon">🛡️</div>
+    <div><h1>AIOps Platform</h1><p>Adversarial Attack-Resilient Cloud Monitoring</p></div>
+  </div>
+  <div style="display:flex;align-items:center;gap:14px;">
+    <div id="apiBadge" class="status-badge"><div class="dot"></div><span>Connecting...</span></div>
+    <span id="lastUp" style="font-size:11px;color:#5070a0;"></span>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- STAT CARDS -->
+  <div class="grid6">
+    <div class="card c-blue"><div class="card-icon">📊</div><div class="card-label">Total Analyzed</div><div class="card-val" id="sTot">—</div><div class="card-sub">samples</div></div>
+    <div class="card c-red"><div class="card-icon">⚠️</div><div class="card-label">Attacks Found</div><div class="card-val" id="sAtk">—</div><div class="card-sub">adversarial</div></div>
+    <div class="card c-green"><div class="card-icon">✔</div><div class="card-label">Normal Traffic</div><div class="card-val" id="sNorm">—</div><div class="card-sub">clean</div></div>
+    <div class="card c-yellow"><div class="card-icon">📈</div><div class="card-label">Detection Rate</div><div class="card-val" id="sDet">—</div><div class="card-sub">% caught</div></div>
+    <div class="card c-purple"><div class="card-icon">🚨</div><div class="card-label">Critical Alerts</div><div class="card-val" id="sCrit">—</div><div class="card-sub">highest sev</div></div>
+    <div class="card c-cyan"><div class="card-icon">🛡</div><div class="card-label">Mitigations</div><div class="card-val" id="sMit">—</div><div class="card-sub">auto-actions</div></div>
+  </div>
+
+  <!-- CHARTS ROW -->
+  <div class="grid2">
+    <!-- Attack distribution bars -->
+    <div class="panel">
+      <div class="panel-title">📊 Attack Type Distribution</div>
+      <div class="bar-chart" id="attackBars">
+        <div style="color:#5070a0;font-size:12px;">Run a simulation to see data...</div>
+      </div>
+    </div>
+    <!-- Severity donut -->
+    <div class="panel">
+      <div class="panel-title">🥧 Alert Severity Breakdown</div>
+      <div class="donut-wrap">
+        <svg class="donut-svg" width="130" height="130" viewBox="0 0 130 130" id="donutSvg">
+          <circle cx="65" cy="65" r="50" fill="none" stroke="#1e3a5f" stroke-width="22"/>
+          <text x="65" y="70" text-anchor="middle" fill="#7090b0" font-size="13">No data</text>
+        </svg>
+        <div class="donut-legend" id="donutLegend">
+          <div class="legend-item"><div class="legend-dot" style="background:#69f0ae"></div>LOW: 0</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#ffd740"></div>MEDIUM: 0</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#ffb74d"></div>HIGH: 0</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#ff5252"></div>CRITICAL: 0</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SIMULATOR -->
+  <div class="panel" style="margin-bottom:22px;">
+    <div class="panel-title">🧪 Attack Simulator</div>
+    <div class="sim-buttons">
+      <button class="btn-sim bn" onclick="sim('normal')">✔ Normal</button>
+      <button class="btn-sim bd" onclick="sim('dos')">💥 DoS Attack</button>
+      <button class="btn-sim bp" onclick="sim('poisoning')">☠ Data Poisoning</button>
+      <button class="btn-sim bi" onclick="sim('injection')">💉 Log Injection</button>
+      <button class="btn-sim be" onclick="sim('evasion')">👻 Model Evasion</button>
+    </div>
+    <div id="simBox" class="result-box"></div>
+  </div>
+
+  <!-- FEED + ALERTS -->
+  <div class="grid2">
+    <div class="panel">
+      <div class="row">
+        <div class="panel-title">⚡ Live Feed</div>
+        <button class="btn btn-b" onclick="clearFeed()">Clear</button>
+      </div>
+      <div class="feed" id="feed">
+        <div class="li">[System] Dashboard loaded. Waiting for API...</div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="row">
+        <div class="panel-title">🚨 Recent Alerts</div>
+        <button class="btn btn-r" onclick="clearAlerts()">Clear</button>
+      </div>
+      <div id="alertTable"><div style="color:#5070a0;font-size:12px;">No alerts yet...</div></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const API='http://127.0.0.1:8000/api/v1';
+
+// ── BOOT ──
+window.onload=()=>{ refresh(); setInterval(refresh,5000); };
+
+async function refresh(){
+  await ping();
+  await loadStats();
+  await loadAlerts();
+  await loadMit();
+  document.getElementById('lastUp').textContent='Updated: '+new Date().toLocaleTimeString();
+}
+
+// ── HEALTH ──
+async function ping(){
+  try{
+    const d=await(await fetch(`${API}/health`)).json();
+    const b=document.getElementById('apiBadge');
+    b.innerHTML='<div class="dot"></div><span>API Online</span>';
+    b.style.color='#00ff64';
+    log('[System] API online. Models loaded: '+d.models_loaded,'i');
+  }catch(e){
+    document.getElementById('apiBadge').innerHTML='<span style="color:#ff5252">API Offline — start API first!</span>';
+    log('[ERROR] API unreachable. Run the uvicorn command in terminal.','a');
+  }
+}
+
+// ── STATS ──
+async function loadStats(){
+  try{
+    const d=await(await fetch(`${API}/alerts/stats`)).json();
+    document.getElementById('sTot').textContent=d.total_analyzed.toLocaleString();
+    document.getElementById('sAtk').textContent=d.total_attacks.toLocaleString();
+    document.getElementById('sNorm').textContent=d.total_normal.toLocaleString();
+    document.getElementById('sDet').textContent=d.detection_rate+'%';
+    document.getElementById('sCrit').textContent=(d.alert_counts['CRITICAL']||0);
+    drawBars(d.attack_counts);
+    drawDonut(d.alert_counts);
+  }catch(e){}
+}
+
+async function loadMit(){
+  try{
+    const d=await(await fetch(`${API}/mitigation/stats`)).json();
+    document.getElementById('sMit').textContent=d.total_responses;
+  }catch(e){}
+}
+
+// ── BAR CHART ──
+const BAR_COLORS={
+  dos_attack:'#ff5252',data_poisoning:'#aa00ff',
+  log_injection:'#ff9100',model_evasion:'#00aacc',
+  fgsm_attack:'#ffd740',none:'#00c853',normal:'#00c853'
+};
+function drawBars(counts){
+  const el=document.getElementById('attackBars');
+  const entries=Object.entries(counts).filter(([k])=>k!=='none');
+  if(!entries.length){el.innerHTML='<div style="color:#5070a0;font-size:12px;">Run a simulation to see data...</div>';return;}
+  const max=Math.max(...entries.map(([,v])=>v));
+  el.innerHTML=entries.map(([k,v])=>`
+    <div class="bar-row">
+      <div class="bar-label">${k.replace('_',' ')}</div>
+      <div class="bar-track">
+        <div class="bar-fill" style="width:${max?Math.round(v/max*100):0}%;background:${BAR_COLORS[k]||'#0066ff'}">
+          <span class="bar-num">${v}</span>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+// ── DONUT ──
+function drawDonut(ac){
+  const vals=[ac.LOW||0,ac.MEDIUM||0,ac.HIGH||0,ac.CRITICAL||0];
+  const colors=['#69f0ae','#ffd740','#ffb74d','#ff5252'];
+  const labels=['LOW','MEDIUM','HIGH','CRITICAL'];
+  const total=vals.reduce((a,b)=>a+b,0);
+  const svg=document.getElementById('donutSvg');
+  const leg=document.getElementById('donutLegend');
+
+  if(!total){
+    svg.innerHTML='<circle cx="65" cy="65" r="50" fill="none" stroke="#1e3a5f" stroke-width="22"/><text x="65" y="70" text-anchor="middle" fill="#7090b0" font-size="13">No data</text>';
+    leg.innerHTML=labels.map((l,i)=>`<div class="legend-item"><div class="legend-dot" style="background:${colors[i]}"></div>${l}: 0</div>`).join('');
+    return;
+  }
+
+  const r=50,cx=65,cy=65,circ=2*Math.PI*r;
+  let offset=0;
+  let segs='';
+  vals.forEach((v,i)=>{
+    if(!v)return;
+    const pct=v/total;
+    const dash=pct*circ;
+    segs+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${colors[i]}" stroke-width="22"
+      stroke-dasharray="${dash} ${circ-dash}"
+      stroke-dashoffset="${-offset*circ}"
+      transform="rotate(-90 ${cx} ${cy})"/>`;
+    offset+=pct;
+  });
+  svg.innerHTML=segs+`<text x="${cx}" y="${cy-6}" text-anchor="middle" fill="#fff" font-size="18" font-weight="700">${total}</text><text x="${cx}" y="${cy+12}" text-anchor="middle" fill="#7090b0" font-size="10">alerts</text>`;
+  leg.innerHTML=labels.map((l,i)=>`<div class="legend-item"><div class="legend-dot" style="background:${colors[i]}"></div>${l}: ${vals[i]}</div>`).join('');
+}
+
+// ── SIMULATE ──
+async function sim(type){
+  document.querySelectorAll('.btn-sim').forEach(b=>b.disabled=true);
+  log(`[Sim] Sending ${type} to API...`,'i');
+  try{
+    const r=await fetch(`${API}/simulate/attack/${type}`,{method:'POST'});
+    const d=await r.json();
+    showResult(d);
+    await refresh();
+  }catch(e){
+    log('[ERROR] '+e.message,'a');
+  }finally{
+    document.querySelectorAll('.btn-sim').forEach(b=>b.disabled=false);
+  }
+}
+
+function showResult(d){
+  const box=document.getElementById('simBox');
+  if(d.is_attack){
+    log(`[ALERT] ${d.attack_type} | ${d.severity} | score=${d.anomaly_score}`,'a');
+    const sev=(d.severity||'').toLowerCase();
+    const cls={critical:'bc',high:'bh',medium:'bm',low:'bl'}[sev]||'bc';
+    box.className='result-box show';
+    box.style.borderColor='rgba(255,23,68,0.5)';
+    box.innerHTML=`<div style="color:#ff5252;font-weight:700;margin-bottom:8px">ATTACK DETECTED</div>
+      <div><b>Type:</b> ${d.attack_type} &nbsp;
+      <b>Severity:</b> <span class="badge ${cls}">${d.severity}</span> &nbsp;
+      <b>Score:</b> <span style="color:#ff5252">${d.anomaly_score}</span></div>
+      <div style="margin-top:8px"><b>Mitigations:</b> ${(d.mitigation_actions||[]).map(a=>`<span style="background:rgba(255,23,68,0.15);border:1px solid rgba(255,23,68,0.3);padding:2px 7px;border-radius:4px;margin:2px;display:inline-block;font-size:11px">${a}</span>`).join('')||'processing...'}</div>`;
+  }else{
+    log(`[OK] Normal traffic. Score=${d.anomaly_score}`,'n');
+    box.className='result-box show';
+    box.style.borderColor='rgba(0,200,83,0.5)';
+    box.innerHTML=`<div style="color:#69f0ae;font-weight:700;margin-bottom:6px">NORMAL TRAFFIC</div>
+      <div><b>Score:</b> <span style="color:#69f0ae">${d.anomaly_score}</span> &nbsp;
+      <b>Recon Error:</b> ${d.reconstruction_error}</div>`;
+  }
+}
+
+// ── ALERTS TABLE ──
+async function loadAlerts(){
+  try{
+    const d=await(await fetch(`${API}/alerts?limit=10`)).json();
+    const el=document.getElementById('alertTable');
+    if(!d.alerts||!d.alerts.length){el.innerHTML='<div style="color:#5070a0;font-size:12px;">No alerts yet — run a simulation!</div>';return;}
+    const cls={CRITICAL:'bc',HIGH:'bh',MEDIUM:'bm',LOW:'bl'};
+    const colors={CRITICAL:'#ff5252',HIGH:'#ffb74d',MEDIUM:'#ffd740',LOW:'#69f0ae'};
+    el.innerHTML=`<table><thead><tr><th>Time</th><th>Severity</th><th>Type</th><th>Score</th></tr></thead><tbody>`+
+      d.alerts.map(a=>{
+        const c=cls[a.severity]||'bl';
+        const col=colors[a.severity]||'#69f0ae';
+        const pct=Math.round(a.anomaly_score*100);
+        return `<tr>
+          <td style="color:#5070a0">${new Date(a.timestamp).toLocaleTimeString()}</td>
+          <td><span class="badge ${c}">${a.severity}</span></td>
+          <td style="color:#c0d0e0">${a.attack_type}</td>
+          <td><span style="color:${col};font-weight:700">${a.anomaly_score}</span>
+            <div class="progress"><div class="prog-fill" style="width:${pct}%;background:${col}"></div></div>
+          </td></tr>`;
+      }).join('')+'</tbody></table>';
+  }catch(e){}
+}
+
+async function clearAlerts(){
+  await fetch(`${API}/alerts/clear`,{method:'DELETE'});
+  log('[System] Alerts cleared','i');
+  await refresh();
+}
+
+// ── FEED ──
+function log(msg,type='i'){
+  const f=document.getElementById('feed');
+  const d=document.createElement('div');
+  d.className=type==='a'?'la':type==='n'?'ln':'li';
+  d.textContent=`[${new Date().toLocaleTimeString()}] ${msg}`;
+  f.appendChild(d);
+  f.scrollTop=f.scrollHeight;
+  while(f.children.length>80)f.removeChild(f.firstChild);
+}
+function clearFeed(){document.getElementById('feed').innerHTML='';log('[System] Feed cleared','i');}
+</script>
+</body>
+</html>
